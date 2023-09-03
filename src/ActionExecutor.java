@@ -1,13 +1,12 @@
+import com.rabbitmq.client.Channel;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class ActionExecutor {
     MainPage myApp;
@@ -468,7 +467,7 @@ public class ActionExecutor {
         return null;
     }
 
-    public void uploadFile(JTextArea textArea){
+    public void uploadFile(JTextArea textArea) throws IOException {
 
         if(SpecificProjectPage.currentProjectId == 0) {
             JOptionPane.showMessageDialog(null, "Select project.", "Warning", JOptionPane.INFORMATION_MESSAGE);
@@ -542,10 +541,26 @@ public class ActionExecutor {
         }else{
             response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, myApp.userPassword,folder);
         }
+
+        if(!SpecificProjectPage.isMessageBrokerUp){
+            SpecificProjectPage.setMessageBroker();
+        }
+        String routingKey = SpecificProjectPage.currentProjectId + myFile[0].getName();
+        String message =  myFile[0].getName() + " is updated .";
+
+        try {
+            SpecificProjectPage.channel.queueDeclare(myFile[0].getName()+"Queue", false, false, false, null);
+            SpecificProjectPage.channel.queueBind(myFile[0].getName()+"Queue", SpecificProjectPage.EXCHANGE_NAME, routingKey);
+        } catch (IOException exc) {
+            throw new RuntimeException(exc);
+        }
+
+        SpecificProjectPage.channel.basicPublish(SpecificProjectPage.EXCHANGE_NAME, routingKey, null, message.getBytes(StandardCharsets.UTF_8));
+
         System.out.println("You are going to upload the file at path: " + myFile[0].getAbsolutePath());
         System.out.println("Project is going to execute.");
 
-        response = "API response message: \n" + response;
+        response = "API response message: \n" + response    ;
         textArea.setText(response);
     }
 

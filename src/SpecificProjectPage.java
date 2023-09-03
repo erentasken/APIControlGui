@@ -2,8 +2,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeoutException;
+
+import com.rabbitmq.client.*;
 
 public class SpecificProjectPage extends JFrame {
+    boolean initialEntryDone = false;
+    public static Channel channel;
+    public static boolean isMessageBrokerUp = false;
+    public static final String EXCHANGE_NAME = "__FileUpdate__";
+    public static String queueName = "Queue";
     static int currentProjectId;
 
     ActionExecutor action;
@@ -28,6 +37,8 @@ public class SpecificProjectPage extends JFrame {
     JMenuItem openFileItem;
     JMenuItem logoutItem;
     JMenuItem closeThePageItem;
+
+    JMenuItem processMenu2;
 
     String page3Guide =
             """
@@ -96,6 +107,9 @@ public class SpecificProjectPage extends JFrame {
 
         menu.add(processMenu1);
 
+        processMenu2 = new JMenuItem("Subscribe to topic");
+        menu.add(processMenu2);
+
         openFileItem = new JMenuItem("Open File");
         menu.add(openFileItem);
 
@@ -158,7 +172,87 @@ public class SpecificProjectPage extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void callTheActionListeners(){
+    public static void setMessageBroker(){
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+
+        Connection connection;
+
+
+        try {
+            connection = factory.newConnection();
+            channel = connection.createChannel();
+            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+            isMessageBrokerUp = true;
+        } catch (IOException | TimeoutException ex) {
+            throw new RuntimeException(ex);
+        }
+
+    }
+
+    private void callTheActionListeners() {
+
+        processMenu2.addActionListener( e-> {
+
+            if(currentProjectId==0){
+                JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            String routingKey = JOptionPane.showInputDialog(null, "Subscribe to title : ", "Title Subscribing", JOptionPane.PLAIN_MESSAGE);
+            if(routingKey == null){
+                return;
+            }
+
+            /*if(channel != null && channel.isOpen() && initialEntryDone){
+                try {
+                    channel.close();
+                    isMessageBrokerUp = false;
+                } catch (IOException | TimeoutException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }*/
+
+            initialEntryDone = true;
+
+            String queueNameInp = routingKey + queueName;
+
+            System.out.println("new queueName = " + queueNameInp);
+
+            if(!isMessageBrokerUp){
+                setMessageBroker();
+            }
+
+            routingKey = currentProjectId + routingKey;
+
+            try {
+                channel.queueDeclarePassive(queueNameInp);
+            } catch (IOException ex) {
+                System.out.println("Queue does not exist with name: " + queueNameInp);
+                return;
+            } catch (AlreadyClosedException err) {
+                System.out.println("queueNameInp: "+ queueNameInp + " in already closed excp");
+                System.out.println("is channel open ???? : " + channel.isOpen());
+                isMessageBrokerUp = false;
+            }
+
+
+            System.out.println(" [*] Waiting for messages in " + queueNameInp + ". To exit press Ctrl+C");
+
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
+                System.out.println(" [x] Received '" + message + "' in " + queueNameInp + "Routing key : " + delivery.getEnvelope().getRoutingKey());
+            };
+
+            try {
+                channel.basicConsume(queueNameInp, false, deliverCallback, consumerTag -> {});
+            } catch (IOException ex ) {
+                throw new RuntimeException(ex);
+            } catch (AlreadyClosedException err ){
+                System.out.println("connection has closed. queue name : " + queueNameInp);
+            }
+        });
+
         closeThePageItem.addActionListener(e -> dispose());
 
         logoutItem.addActionListener(e -> {
@@ -204,7 +298,11 @@ public class SpecificProjectPage extends JFrame {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            action.uploadFile(textArea);
+            try {
+                action.uploadFile(textArea);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         getFileItem.addActionListener(e -> {
