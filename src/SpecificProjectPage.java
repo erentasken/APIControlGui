@@ -178,7 +178,11 @@ public class SpecificProjectPage extends JFrame {
 
         processMenu3.addActionListener( e ->
                 {
+                    if(!MessageBroker.topicList.isEmpty())
                     JOptionPane.showMessageDialog(null, MessageBroker.topicList, "Project Selection", JOptionPane.INFORMATION_MESSAGE);
+                    else{
+                        JOptionPane.showMessageDialog(null, "Subscription list is empty. ", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
+                    }
                 });
 
         processMenu2.addActionListener( e-> {
@@ -193,7 +197,6 @@ public class SpecificProjectPage extends JFrame {
                 return;
             }
 
-            //String queueNameInp = routingKey + MessageBroker.queueName;
 
             MessageBroker.ListenTopic(routingKey);
 

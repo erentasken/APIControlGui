@@ -93,7 +93,7 @@ public class MessageBroker {
             try {
                 Thread.sleep(1500);
                 SwingUtilities.invokeLater(() -> {
-                    JOptionPane.showMessageDialog(null, "thread string : "+messageBuilder.toString(), "Info", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, messageBuilder.toString(), "Info", JOptionPane.INFORMATION_MESSAGE);
                 });
                 goToElse = true;
 
@@ -105,8 +105,7 @@ public class MessageBroker {
         deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             if (!goToElse) {
-                messageBuilder.append("[x] Received '").append(message).append("' in ").append(queueNameInp)
-                        .append(" Routing key : ").append(delivery.getEnvelope().getRoutingKey()).append("\n");
+                messageBuilder.append(message).append(queueNameInp).append("\n");
                 if(initialListening) {
                     System.out.println("in thread.");
                     delayThread.start();
