@@ -542,20 +542,7 @@ public class ActionExecutor {
             response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, myApp.userPassword,folder);
         }
 
-        if(!SpecificProjectPage.isMessageBrokerUp){
-            SpecificProjectPage.setMessageBroker();
-        }
-        String routingKey = SpecificProjectPage.currentProjectId + myFile[0].getName();
-        String message =  myFile[0].getName() + " is updated .";
-
-        try {
-            SpecificProjectPage.channel.queueDeclare(myFile[0].getName()+"Queue", false, false, false, null);
-            SpecificProjectPage.channel.queueBind(myFile[0].getName()+"Queue", SpecificProjectPage.EXCHANGE_NAME, routingKey);
-        } catch (IOException exc) {
-            throw new RuntimeException(exc);
-        }
-
-        SpecificProjectPage.channel.basicPublish(SpecificProjectPage.EXCHANGE_NAME, routingKey, null, message.getBytes(StandardCharsets.UTF_8));
+        MessageBroker.SendMessage(myFile[0].getName());
 
         System.out.println("You are going to upload the file at path: " + myFile[0].getAbsolutePath());
         System.out.println("Project is going to execute.");

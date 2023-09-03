@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -8,19 +9,12 @@ import java.util.concurrent.TimeoutException;
 import com.rabbitmq.client.*;
 
 public class SpecificProjectPage extends JFrame {
-    boolean initialEntryDone = false;
-    public static Channel channel;
-    public static boolean isMessageBrokerUp = false;
-    public static final String EXCHANGE_NAME = "__FileUpdate__";
-    public static String queueName = "Queue";
     static int currentProjectId;
-
     ActionExecutor action;
     ManageProjectPage manageProjectPageObj;
 
     JTextArea textArea;
     JTextArea projectInfoArea;
-
     JButton selectingProjectButton;
     JButton pageGuideButton;
     JButton appGuideButton;
@@ -39,7 +33,7 @@ public class SpecificProjectPage extends JFrame {
     JMenuItem closeThePageItem;
 
     JMenuItem processMenu2;
-
+    JMenuItem processMenu3;
     String page3Guide =
             """
                     Welcome to "Open Project" guide!
@@ -107,8 +101,15 @@ public class SpecificProjectPage extends JFrame {
 
         menu.add(processMenu1);
 
-        processMenu2 = new JMenuItem("Subscribe to topic");
-        menu.add(processMenu2);
+        JMenu subscriptionMenu = new JMenu("Subscription");
+
+        processMenu2 = new JMenuItem("Subscribe To File");
+        subscriptionMenu.add(processMenu2);
+
+        processMenu3 = new JMenuItem("Get Subscribed File List");
+        subscriptionMenu.add(processMenu3);
+
+        menu.add(subscriptionMenu);
 
         openFileItem = new JMenuItem("Open File");
         menu.add(openFileItem);
@@ -126,18 +127,19 @@ public class SpecificProjectPage extends JFrame {
 
     private void initializeUI(){
         setTitle("Open Project");
-        setSize(600, 500);
+        setSize(800, 500);
         setLocationRelativeTo(null);
         setResizable(true);
     }
 
     private void setInformationCorner(){
+
         JPanel pagePanel = new JPanel();
         selectingProjectButton = new JButton("Select Project. ");
         JLabel titleLabel = new JLabel("Open Project.");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        projectInfoArea = new JTextArea("Select project.");
+        projectInfoArea = new JTextArea("There is no selected project.");
         pagePanel.add(titleLabel);
         pagePanel.add(selectingProjectButton);
         pagePanel.add(projectInfoArea);
@@ -172,25 +174,12 @@ public class SpecificProjectPage extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    public static void setMessageBroker(){
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-
-        Connection connection;
-
-
-        try {
-            connection = factory.newConnection();
-            channel = connection.createChannel();
-            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
-            isMessageBrokerUp = true;
-        } catch (IOException | TimeoutException ex) {
-            throw new RuntimeException(ex);
-        }
-
-    }
-
     private void callTheActionListeners() {
+
+        processMenu3.addActionListener( e ->
+                {
+                    JOptionPane.showMessageDialog(null, MessageBroker.topicList, "Project Selection", JOptionPane.INFORMATION_MESSAGE);
+                });
 
         processMenu2.addActionListener( e-> {
 
@@ -204,53 +193,10 @@ public class SpecificProjectPage extends JFrame {
                 return;
             }
 
-            /*if(channel != null && channel.isOpen() && initialEntryDone){
-                try {
-                    channel.close();
-                    isMessageBrokerUp = false;
-                } catch (IOException | TimeoutException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }*/
+            //String queueNameInp = routingKey + MessageBroker.queueName;
 
-            initialEntryDone = true;
+            MessageBroker.ListenTopic(routingKey);
 
-            String queueNameInp = routingKey + queueName;
-
-            System.out.println("new queueName = " + queueNameInp);
-
-            if(!isMessageBrokerUp){
-                setMessageBroker();
-            }
-
-            routingKey = currentProjectId + routingKey;
-
-            try {
-                channel.queueDeclarePassive(queueNameInp);
-            } catch (IOException ex) {
-                System.out.println("Queue does not exist with name: " + queueNameInp);
-                return;
-            } catch (AlreadyClosedException err) {
-                System.out.println("queueNameInp: "+ queueNameInp + " in already closed excp");
-                System.out.println("is channel open ???? : " + channel.isOpen());
-                isMessageBrokerUp = false;
-            }
-
-
-            System.out.println(" [*] Waiting for messages in " + queueNameInp + ". To exit press Ctrl+C");
-
-            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-                System.out.println(" [x] Received '" + message + "' in " + queueNameInp + "Routing key : " + delivery.getEnvelope().getRoutingKey());
-            };
-
-            try {
-                channel.basicConsume(queueNameInp, false, deliverCallback, consumerTag -> {});
-            } catch (IOException ex ) {
-                throw new RuntimeException(ex);
-            } catch (AlreadyClosedException err ){
-                System.out.println("connection has closed. queue name : " + queueNameInp);
-            }
         });
 
         closeThePageItem.addActionListener(e -> dispose());
