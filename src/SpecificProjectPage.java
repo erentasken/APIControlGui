@@ -1,12 +1,7 @@
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeoutException;
-
-import com.rabbitmq.client.*;
 
 public class SpecificProjectPage extends JFrame {
     static int currentProjectId;
@@ -32,8 +27,8 @@ public class SpecificProjectPage extends JFrame {
     JMenuItem logoutItem;
     JMenuItem closeThePageItem;
 
-    JMenuItem processMenu2;
-    JMenuItem processMenu3;
+    JMenuItem subscribeFileItem;
+    JMenuItem getSubscriptionListItem;
     String page3Guide =
             """
                     Welcome to "Open Project" guide!
@@ -51,10 +46,17 @@ public class SpecificProjectPage extends JFrame {
                     ----------------------------------------------------------------------------------------------------------------
                     There is a menu item named "File Management" where you can execute the following processes:
 
-                    "Upload A File": Uploads a file into the selected project.
+                    "Upload A File": Uploads a file into the selected project. Then notifies the update to file subscribers.
                     "Delete A File": Deletes the file from the selected project.
                     "List Files": Lists the files in the selected project.
-                    "Download A File": Downloads a file from the selected project.""";
+                    "Download A File": Downloads a file from the selected project.
+                    ----------------------------------------------------------------------------------------------------------------
+                    There is a menu item named "Subscription" where you can subscribe to file and list the subscribed files.
+                    
+                    "Subscribe To File": Subscribes to desired file in order to get notifications of file update.
+                    "Get Subscribed File List": Lists the subscribed files. 
+                    
+                    """;
 
     public SpecificProjectPage(ActionExecutor action, ManageProjectPage manageProjectPageObj){
         this.manageProjectPageObj = manageProjectPageObj;
@@ -103,11 +105,11 @@ public class SpecificProjectPage extends JFrame {
 
         JMenu subscriptionMenu = new JMenu("Subscription");
 
-        processMenu2 = new JMenuItem("Subscribe To File");
-        subscriptionMenu.add(processMenu2);
+        subscribeFileItem = new JMenuItem("Subscribe To File");
+        subscriptionMenu.add(subscribeFileItem);
 
-        processMenu3 = new JMenuItem("Get Subscribed File List");
-        subscriptionMenu.add(processMenu3);
+        getSubscriptionListItem = new JMenuItem("Get Subscribed File List");
+        subscriptionMenu.add(getSubscriptionListItem);
 
         menu.add(subscriptionMenu);
 
@@ -176,30 +178,25 @@ public class SpecificProjectPage extends JFrame {
 
     private void callTheActionListeners() {
 
-        processMenu3.addActionListener( e ->
+        getSubscriptionListItem.addActionListener(e ->
                 {
                     if(!MessageBroker.topicList.isEmpty())
                     JOptionPane.showMessageDialog(null, MessageBroker.topicList, "Project Selection", JOptionPane.INFORMATION_MESSAGE);
-                    else{
+                    else if(MessageBroker.isConnected){
                         JOptionPane.showMessageDialog(null, "Subscription list is empty. ", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                     }
                 });
 
-        processMenu2.addActionListener( e-> {
-
+        subscribeFileItem.addActionListener(e-> {
             if(currentProjectId==0){
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-
             String routingKey = JOptionPane.showInputDialog(null, "Subscribe to title : ", "Title Subscribing", JOptionPane.PLAIN_MESSAGE);
             if(routingKey == null){
                 return;
             }
-
-
             MessageBroker.ListenTopic(routingKey);
-
         });
 
         closeThePageItem.addActionListener(e -> dispose());

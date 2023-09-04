@@ -9,6 +9,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MessageBroker {
+    public static boolean isConnected;
     private static DeliverCallback deliverCallback;
     private static String queueNameInp;
     private static boolean goToElse = false;
@@ -42,8 +43,13 @@ public class MessageBroker {
                     channel.basicConsume(nameQueue, true, deliverCallback, consumerTag -> {});
                 }
             }
+            isConnected = true;
         } catch (IOException | TimeoutException ex) {
-            throw new RuntimeException(ex);
+            isConnected = false;
+            SwingUtilities.invokeLater(() -> {
+                System.out.println("Hello");
+                JOptionPane.showMessageDialog(null, "RabbitMQ Client is not running. ", "Info", JOptionPane.INFORMATION_MESSAGE);
+            });
         }
     }
 
