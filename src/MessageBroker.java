@@ -1,97 +1,144 @@
 import com.rabbitmq.client.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MessageBroker {
-    public static boolean isConnected;
     private static DeliverCallback deliverCallback;
     private static String queueNameInp;
     private static boolean goToElse = false;
     private static boolean initialListening = true;
-    private static Channel channel;
+    public static Channel channel;
     private static final ConnectionFactory factory;
     public static final String EXCHANGE_NAME = "__FileUpdate__";
     public static String queueName = "Queue";
 
-    private static AtomicBoolean gotoElseBool;
-
-    public static List<String> topicList;
+    public static List<Channel> channelList; // delete it
+    public static List<JCheckBox> topicList;
+    public static List<String> queueList;
 
     static {
-        topicList = new ArrayList<String>();
+        queueList = new ArrayList<String>();
+        channelList = new ArrayList<Channel>();
+        topicList = new ArrayList<JCheckBox>();
         factory = new ConnectionFactory();
         factory.setHost("localhost");
-        gotoElseBool = new AtomicBoolean(true);
         setupConnection();
+        stringToCheckboxList();
     }
     public static void setupConnection(){
         try {
-
+            System.out.println("Connection is creating ");
             Connection connection = factory.newConnection();
             channel = connection.createChannel();
             channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+            channelList.add(channel);
             if(!initialListening) {
-                String nameQueue;
-                for(String str : topicList){
-                    nameQueue = str + "Queue";
-                    channel.basicConsume(nameQueue, true, deliverCallback, consumerTag -> {});
+                for(JLabel label : SpecificProjectPage.labelList){
+                    ListenTopic(label.getText());
                 }
             }
-            isConnected = true;
         } catch (IOException | TimeoutException ex) {
-            isConnected = false;
             SwingUtilities.invokeLater(() -> {
-                System.out.println("Hello");
                 JOptionPane.showMessageDialog(null, "RabbitMQ Client is not running. ", "Info", JOptionPane.INFORMATION_MESSAGE);
             });
         }
     }
 
+    private static void stringToCheckboxList(){
+        List<String> fileList = returnFileList();
+        for(String str : fileList){
+            topicList.add(new JCheckBox(str));
+        }
+    }
+
+    private static List<String> returnFileList(){
+        String response = MainPage.action.myApp.apiConnection.post("listFiles", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId));
+
+        JSONArray jsonArray = new JSONArray(response);
+
+        List<String> pathsList = new ArrayList<>();
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            String path = jsonObject.getString("path");
+            pathsList.add(path);
+        }
+
+        System.out.println( " this is the list : " + pathsList );
+
+        return pathsList;
+    }
+
     public static void SendMessage(String fileName) throws IOException {
+        if(channel == null ) {
+            System.out.println("channel is null ");
+            return;
+        }
         if(!channel.isOpen()){
             setupConnection();
         }
 
-        String routingKey = SpecificProjectPage.currentProjectId + fileName;
         String message =  fileName + " is updated .";
 
-        String declearedQueue = fileName + "Queue";
-        try {
-            channel.queueDeclare(declearedQueue, false, false, false, null);
-            channel.queueBind(declearedQueue, EXCHANGE_NAME, routingKey);
-        } catch (IOException exc) {
-            throw new RuntimeException(exc);
-        } catch (AlreadyClosedException err ) {
-            setupConnection();
-        }
+        String routingKey = createQueue(fileName);
+
         channel.basicPublish(EXCHANGE_NAME, routingKey, null, message.getBytes(StandardCharsets.UTF_8));
     }
 
-    public static void ListenTopic(String routingKey){
-        queueNameInp = routingKey + MessageBroker.queueName;
-        if(!channel.isOpen()){
+    private static String createQueue(String fileName){
+        String declaredQueue = fileName + "Queue";
+        String routingKey = SpecificProjectPage.currentProjectId + fileName;
+        try {
+            assert channel != null;
+            channel.queueDeclare(declaredQueue, false, false, false, null);
+            channel.queueBind(declaredQueue, EXCHANGE_NAME, routingKey);
+        } catch (IOException exc) {
+            throw new RuntimeException(exc);
+        } catch (AlreadyClosedException err ) {
+            System.out.println("create queue exception ");
             setupConnection();
         }
 
-        try {
-            channel.queueDeclarePassive(queueNameInp);
-        } catch (IOException ex) {
-            SwingUtilities.invokeLater(() -> {
-                JOptionPane.showMessageDialog(null, "File does not exist with name first exp: " + routingKey, "Info", JOptionPane.INFORMATION_MESSAGE);
-            });
-            System.out.println("Connection alive :" + channel.isOpen());
-            return;
+        return routingKey;
+    }
+
+
+    public static void ListenTopic(String fileName){
+        if(!channel.isOpen()){
+            System.out.println("Channel is not open, so setupConnection() executed.");
+            setupConnection();
         }
 
-        if(!topicList.contains(routingKey)) {
-            JOptionPane.showMessageDialog(null, "The subscription : " + routingKey + " is added .", "Info", JOptionPane.INFORMATION_MESSAGE);
-            topicList.add(routingKey);
+        queueNameInp = fileName + "Queue";
+
+        try {
+            channel.queueDeclarePassive(queueNameInp);
+        } catch (Exception ex) {
+            System.out.println("hello there. ");
+            setupConnection();
+            createQueue(fileName);
+            System.out.println("Connection alive :" + channel.isOpen());
+        }
+
+        boolean containsRoutingKey = false;
+        for (JCheckBox checkBox : topicList) {
+            System.out.println(checkBox.getText());
+            if (checkBox.getText().equals(fileName)) {
+                containsRoutingKey = true;
+                break;
+            }
+        }
+
+        if (!containsRoutingKey) {
+            JOptionPane.showMessageDialog(null, "The subscription : " + fileName + " is added .", "Info", JOptionPane.INFORMATION_MESSAGE);
+            topicList.add(new JCheckBox(fileName));
         }
 
         StringBuilder messageBuilder = new StringBuilder();;
@@ -126,6 +173,8 @@ public class MessageBroker {
 
         try {
             channel.basicConsume(queueNameInp, true, deliverCallback, consumerTag -> {});
+            System.out.println("started to listen the file: " + fileName);
+            queueList.add(queueNameInp);
         } catch (IOException ex ) {
             throw new RuntimeException(ex);
         } catch (AlreadyClosedException err ){

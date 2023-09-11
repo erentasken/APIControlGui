@@ -450,7 +450,6 @@ public class ActionExecutor {
         }
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
-        //myApp.responseArea3.setText(response);
         textArea.setText(response);
     }
 
