@@ -1,14 +1,13 @@
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
+import java.util.Objects;
 
 public class SpecificProjectPage extends JFrame {
 
@@ -17,13 +16,11 @@ public class SpecificProjectPage extends JFrame {
     static int currentProjectId;
     ActionExecutor action;
     ManageProjectPage manageProjectPageObj;
-
     JTextArea textArea;
     JTextArea projectInfoArea;
     JButton selectingProjectButton;
     JButton pageGuideButton;
     JButton appGuideButton;
-
     JMenuItem viewUserItem;
     JMenuItem viewUserPrivilegesItem;
     JMenuItem addNewUserItem;
@@ -61,13 +58,13 @@ public class SpecificProjectPage extends JFrame {
                     "Download A File": Downloads a file from the selected project.
                     ----------------------------------------------------------------------------------------------------------------
                     There is a menu item named "Subscription" where you can subscribe to file and list the subscribed files.
-                    
+                                        
                     "Subscribe To File": Subscribes to desired file in order to get notifications of file update.
                     "Get Subscribed File List": Lists the subscribed files. 
-                    
+                                        
                     """;
 
-    public SpecificProjectPage(ActionExecutor action, ManageProjectPage manageProjectPageObj){
+    public SpecificProjectPage(ActionExecutor action, ManageProjectPage manageProjectPageObj) {
         this.manageProjectPageObj = manageProjectPageObj;
         this.action = action;
         initializeUI();
@@ -81,7 +78,7 @@ public class SpecificProjectPage extends JFrame {
         setVisible(true);
     }
 
-    private void setTheMenuBar(){
+    private void setTheMenuBar() {
         JMenuBar menuBar3 = new JMenuBar();
 
         JMenu menu = new JMenu("Menu");
@@ -130,14 +127,14 @@ public class SpecificProjectPage extends JFrame {
         setJMenuBar(menuBar3);
     }
 
-    private void initializeUI(){
+    private void initializeUI() {
         setTitle("Open Project");
         setSize(800, 500);
         setLocationRelativeTo(null);
         setResizable(true);
     }
 
-    private void setInformationCorner(){
+    private void setInformationCorner() {
         labelList = new ArrayList<JLabel>();
         JPanel pagePanel = new JPanel();
         selectingProjectButton = new JButton("Select Project. ");
@@ -184,11 +181,9 @@ public class SpecificProjectPage extends JFrame {
         JPanel checkboxPanel = new JPanel();
         checkboxPanel.setLayout(new BoxLayout(checkboxPanel, BoxLayout.Y_AXIS));
         JFrame frame = new JFrame("SUBSCRIPTIONS");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         checkboxPanel.add(new JLabel("FILES"));
-        checkboxPanel.add(new JSeparator()
-        );
+        checkboxPanel.add(new JSeparator());
 
         for (JCheckBox checkBox : MessageBroker.topicList) {
             size += 70;
@@ -200,7 +195,7 @@ public class SpecificProjectPage extends JFrame {
 
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        JLabel selectedLabel = new JLabel("Selected Subscriptions");
+        JLabel selectedLabel = new JLabel("SELECTED SUBSCRIPTION");
         rightPanel.add(selectedLabel);
 
         JSeparator separator = new JSeparator();
@@ -209,6 +204,14 @@ public class SpecificProjectPage extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         myButton = new JButton("Update Subscriptions");
         buttonPanel.add(myButton);
+
+        int mySize = 0;
+        for (JLabel label : labelList) {
+            mySize += 70;
+            rightPanel.add(label);
+            frame.setSize(450, mySize);
+            System.out.println("our label : " + label.getText());
+        }
 
         myButton.addActionListener(e -> {
             for (JCheckBox checkBox : MessageBroker.topicList) {
@@ -233,12 +236,11 @@ public class SpecificProjectPage extends JFrame {
                         JLabel label = iterator.next();
                         if (label.getText().equals(checkBox.getText())) {
                             Iterator channelIter = MessageBroker.channelList.iterator();
-                            while(channelIter.hasNext()) {
+                            while (channelIter.hasNext()) {
                                 Channel channel = (Channel) channelIter.next();
-                                try{
+                                try {
                                     channel.queueDelete(label.getText() + "Queue");
-                                }catch(Exception exp) {
-                                    exp.printStackTrace();
+                                } catch (Exception ignore) {
                                 }
 
                             }
@@ -269,20 +271,23 @@ public class SpecificProjectPage extends JFrame {
 
     private void callTheActionListeners() {
         manageSubscription.addActionListener(e ->
-                {
-                    if(!MessageBroker.channel.isOpen()) {
-                        System.out.println("call the action setupconnection");
-                        MessageBroker.setupConnection();
-                    }
+        {
+            try {
+                if (!MessageBroker.channel.isOpen()) {
+                    System.out.println("call the action setupconnection");
+                    MessageBroker.setupConnection();
+                }
+                if (!MessageBroker.topicList.isEmpty()) {
+                    setCheckBox();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Subscription list is empty. ", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
+                }
+            } catch (NullPointerException exp) {
+                return;
+            }
 
-                    if(!MessageBroker.topicList.isEmpty()){
-                        setCheckBox();
-                    }
-                    else {
-                        JOptionPane.showMessageDialog(null, "Subscription list is empty. ", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
-                    }
 
-                });
+        });
 
         closeThePageItem.addActionListener(e -> dispose());
 
@@ -305,8 +310,8 @@ public class SpecificProjectPage extends JFrame {
         });
 
         selectingProjectButton.addActionListener(e -> {
-            String projectIdInput= JOptionPane.showInputDialog(null, "Enter the project id. ", "Project Id Input", JOptionPane.PLAIN_MESSAGE);
-            if(projectIdInput != null){
+            String projectIdInput = JOptionPane.showInputDialog(null, "Enter the project id. ", "Project Id Input", JOptionPane.PLAIN_MESSAGE);
+            if (projectIdInput != null) {
                 currentProjectId = Integer.parseInt(projectIdInput);
                 projectInfoArea.setText("Current project id : " + currentProjectId);
             }
@@ -317,7 +322,7 @@ public class SpecificProjectPage extends JFrame {
         pageGuideButton.addActionListener(e -> JOptionPane.showMessageDialog(null, page3Guide, "Help", JOptionPane.INFORMATION_MESSAGE));
 
         listFilesItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -325,7 +330,7 @@ public class SpecificProjectPage extends JFrame {
         });
 
         putFileItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -337,7 +342,7 @@ public class SpecificProjectPage extends JFrame {
         });
 
         getFileItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -345,7 +350,7 @@ public class SpecificProjectPage extends JFrame {
         });
 
         deleteFileItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -353,7 +358,7 @@ public class SpecificProjectPage extends JFrame {
         });
 
         viewUserItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -361,7 +366,7 @@ public class SpecificProjectPage extends JFrame {
         });
 
         viewUserPrivilegesItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -369,7 +374,7 @@ public class SpecificProjectPage extends JFrame {
         });
 
         addNewUserItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -377,7 +382,7 @@ public class SpecificProjectPage extends JFrame {
         });
 
         modifyUserRightsItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -385,7 +390,7 @@ public class SpecificProjectPage extends JFrame {
         });
 
         removeUserItem.addActionListener(e -> {
-            if(currentProjectId==0){
+            if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
@@ -406,13 +411,12 @@ public class SpecificProjectPage extends JFrame {
 
             selectedFile = fileChooser.getSelectedFile();
 
-            if(!Desktop.isDesktopSupported())
-            {
+            if (!Desktop.isDesktopSupported()) {
                 System.out.println("not supported");
                 return;
             }
             Desktop desktop = Desktop.getDesktop();
-            if(selectedFile.exists()) {
+            if (selectedFile.exists()) {
                 try {
                     desktop.open(selectedFile);
                 } catch (IOException ex) {
