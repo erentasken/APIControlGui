@@ -12,7 +12,7 @@ public class APIConnection {
         this.apiEndPoint = new URL(endPoint);
     }
 
-    public String sendFileToServer(File selectedFile, String projectId, String email, String password,String folder){
+    public String sendFileToServer(File selectedFile, String projectId, String email, String password, String folder) {
         try {
             HttpURLConnection connection = (HttpURLConnection) this.apiEndPoint.openConnection();
             connection.setDoOutput(true);
@@ -76,7 +76,7 @@ public class APIConnection {
         }
     }
 
-    public String sendFileToServer(File selectedFile, String projectId, String email, String password){
+    public String sendFileToServer(File selectedFile, String projectId, String email, String password) {
         try {
             HttpURLConnection connection = (HttpURLConnection) this.apiEndPoint.openConnection();
             connection.setDoOutput(true);
@@ -225,9 +225,9 @@ public class APIConnection {
         postParams.put("action", action);
         postParams.put("email", email);
         postParams.put("password", password);
-        if(action.equals("addProject")){
+        if (action.equals("addProject")) {
             postParams.put("projectName", param1);
-        }else if(action.equals("listFiles") || action.equals("listUsersInProject") || action.equals("listTables")){
+        } else if (action.equals("listFiles") || action.equals("listUsersInProject") || action.equals("listTables")) {
             postParams.put("project", param1);
         }
         return sendPostRequest(postParams);
@@ -304,6 +304,7 @@ public class APIConnection {
         }
         return sendPostRequest(postParams);
     }
+
     public String post(String action, String email, String password, String projectId, String userId, boolean modify, boolean create, boolean delete) {
         JSONObject postParams = new JSONObject();
         postParams.put("action", action);

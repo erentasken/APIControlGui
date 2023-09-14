@@ -70,18 +70,20 @@ public class LoginPage extends JFrame {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
 
-            boolean isAuthenticated;
+            int isAuthenticated;
             try {
                 isAuthenticated = authenticate(username, password);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
 
-            if (isAuthenticated) {
+            if (isAuthenticated == 1) {
                 dispose();
                 new MainPage(username, password);
-            } else {
+            } else if (isAuthenticated == 0){
                 JOptionPane.showMessageDialog(LoginPage.this, "Invalid username or password!", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null,"For accessing the data warehouse connect to internet.");
             }
         });
         loginButtonPanel.add(loginButton, BorderLayout.CENTER);
@@ -108,11 +110,19 @@ public class LoginPage extends JFrame {
         return response;
     }
 
-    private boolean authenticate(String username, String password) throws IOException {
+    private int authenticate(String username, String password) throws IOException {
         APIConnection checkerPing = new APIConnection("https://active-registry.aitoc.eu/api.php");
-        String response = checkerPing.post("listUsers", username, password);
+        String response;
+        try{
+             response = checkerPing.post("listUsers", username, password);
+        }catch (Exception e) {
+            return -1; // no internet return
+        }
         response = jsonBeautifier(response);
-        return !response.contains("Bad username/email or password");
+        if ( !response.contains("Bad username/email or password") ) {
+            return 1;
+        }
+        return 0;
     }
 
     public static void main(String[] args) {

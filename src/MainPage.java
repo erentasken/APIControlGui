@@ -7,9 +7,10 @@ public class MainPage extends JFrame {
     protected APIConnection apiConnection;
 
     public static String userName;
-    protected String userPassword;
+    public static String userPassword;
 
-    private final ActionExecutor action;
+    //private final ActionExecutor action;
+    public static ActionExecutor action = null;
 
     private JButton appGuideButton;
 
@@ -54,7 +55,7 @@ public class MainPage extends JFrame {
 
     public MainPage(String userName, String userPassword) {
         MainPage.userName = userName;
-        this.userPassword = userPassword;
+        MainPage.userPassword = userPassword;
         action = new ActionExecutor(this);
 
         initializeAPIConnection();
