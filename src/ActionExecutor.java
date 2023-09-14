@@ -1,12 +1,13 @@
-import com.rabbitmq.client.Channel;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class ActionExecutor {
     MainPage myApp;
@@ -15,11 +16,11 @@ public class ActionExecutor {
         this.myApp = myApp;
     }
 
-    public void haltTheMainApp(){
+    public void haltTheMainApp() {
         myApp.dispose();
     }
 
-    public String jsonBeautifier(String response){
+    public String jsonBeautifier(String response) {
         try {
             Object json = new JSONTokener(response).nextValue();
 
@@ -33,14 +34,14 @@ public class ActionExecutor {
         return response;
     }
 
-    public void listUsers(JTextArea textArea){ //listUsers
+    public void listUsers(JTextArea textArea) { //listUsers
         String response = myApp.apiConnection.post("listUsers", MainPage.userName, myApp.userPassword);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
         textArea.setText(response);
     }
 
-    public void addNewUser(JTextArea textArea){
+    public void addNewUser(JTextArea textArea) {
         int resultF = JOptionPane.showConfirmDialog(
                 null,
                 "You are going to add a new user.",
@@ -49,9 +50,9 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(resultF == JOptionPane.OK_OPTION){
+        if (resultF == JOptionPane.OK_OPTION) {
             System.out.println("process is going to execute.");
-        }else{
+        } else {
             System.out.println("process canceled.");
             return;
         }
@@ -98,7 +99,7 @@ public class ActionExecutor {
         textArea.setText(response);
     }
 
-    public void getUserListInProject(JTextArea textArea){
+    public void getUserListInProject(JTextArea textArea) {
         String response = myApp.apiConnection.post("listUsersInProject", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId));
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
@@ -106,9 +107,9 @@ public class ActionExecutor {
         textArea.setText(response);
     }
 
-    public void viewUserPrivilegesInProject(JTextArea textArea){
+    public void viewUserPrivilegesInProject(JTextArea textArea) {
         String userid = JOptionPane.showInputDialog(null, "User id: ", "User Id Input", JOptionPane.PLAIN_MESSAGE);
-        if(userid == null){
+        if (userid == null) {
             System.out.println("Input canceled.");
             return; // Exit the actionPerformed method
         }
@@ -119,7 +120,7 @@ public class ActionExecutor {
         textArea.setText(response);
     }
 
-    public void addNewUserToProject(JTextArea textArea){
+    public void addNewUserToProject(JTextArea textArea) {
         int resultF = JOptionPane.showConfirmDialog(
                 null,
                 "You are going to add a new user to project.",
@@ -128,9 +129,9 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(resultF == JOptionPane.OK_OPTION){
+        if (resultF == JOptionPane.OK_OPTION) {
             System.out.println("process is going to execute.");
-        }else{
+        } else {
             System.out.println("process canceled.");
             return;
         }
@@ -211,7 +212,7 @@ public class ActionExecutor {
         textArea.setText(response);
     }
 
-    public void modifyUserRightsInProject(JTextArea textArea){
+    public void modifyUserRightsInProject(JTextArea textArea) {
         int resultF = JOptionPane.showConfirmDialog(
                 null,
                 "You are going to modify the user rights in project.",
@@ -220,9 +221,9 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(resultF == JOptionPane.OK_OPTION){
+        if (resultF == JOptionPane.OK_OPTION) {
             System.out.println("process is going to execute.");
-        }else{
+        } else {
             System.out.println("process canceled.");
             return;
         }
@@ -305,16 +306,16 @@ public class ActionExecutor {
         textArea.setText(response);
     }
 
-    public void listTheProjects(JTextArea textArea){
+    public void listTheProjects(JTextArea textArea) {
 
         String response = myApp.apiConnection.post("listProjects", MainPage.userName, myApp.userPassword);
-        response =jsonBeautifier(response);
+        response = jsonBeautifier(response);
         response = "API response message: \n" + response;
         //myApp.responseArea2.setText(response);
         textArea.setText(response);
     }
 
-    public void removeUserFromProject(JTextArea textArea){
+    public void removeUserFromProject(JTextArea textArea) {
         int result = JOptionPane.showConfirmDialog(
                 null,
                 "You are going to remove the user from project.",
@@ -323,15 +324,15 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(result == JOptionPane.OK_OPTION){
+        if (result == JOptionPane.OK_OPTION) {
             System.out.println("process is going to execute.");
-        }else{
+        } else {
             System.out.println("process canceled.");
             return;
         }
 
         String userid = JOptionPane.showInputDialog(null, "User id: ", "User Id Input", JOptionPane.PLAIN_MESSAGE);
-        if(userid == null){
+        if (userid == null) {
             System.out.println("Input canceled.");
             return; // Exit the actionPerformed method
         }
@@ -344,7 +345,7 @@ public class ActionExecutor {
 
     }
 
-    public void createProject(JTextArea textArea){
+    public void createProject(JTextArea textArea) {
 
         int resultF = JOptionPane.showConfirmDialog(
                 null,
@@ -354,9 +355,9 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(resultF == JOptionPane.OK_OPTION){
+        if (resultF == JOptionPane.OK_OPTION) {
             System.out.println("process is going to execute.");
-        }else{
+        } else {
             System.out.println("process canceled.");
             return;
         }
@@ -397,7 +398,7 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(result == JOptionPane.CANCEL_OPTION){
+        if (result == JOptionPane.CANCEL_OPTION) {
             System.out.println("Creating project is canceled. ");
             return;
         }
@@ -405,10 +406,10 @@ public class ActionExecutor {
         String projectName = projectNameField.getText();
         String projectDescription = descriptionField.getText();
         String response;
-        if(projectDescription.isEmpty()){
+        if (projectDescription.isEmpty()) {
             System.out.println("You didn't enter the project description");
             response = myApp.apiConnection.post("addProject", MainPage.userName, myApp.userPassword, projectName); // projectDescription is additional
-        }else{
+        } else {
             response = myApp.apiConnection.post("addProject", MainPage.userName, myApp.userPassword, projectName, projectDescription); // projectDescription is additional
         }
 
@@ -439,8 +440,8 @@ public class ActionExecutor {
             if (path.isEmpty()) {
                 System.out.println("Path input not being entered.");
                 response = myApp.apiConnection.post("listFiles", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId));
-            }else{
-                System.out.println("You are about to list files in project: "+ SpecificProjectPage.currentProjectId + " at path: " + path);
+            } else {
+                System.out.println("You are about to list files in project: " + SpecificProjectPage.currentProjectId + " at path: " + path);
                 response = myApp.apiConnection.post("listFiles", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), path);
             }
             System.out.println("Project is going to execute.");
@@ -459,7 +460,7 @@ public class ActionExecutor {
 
         if (result == JFileChooser.APPROVE_OPTION) {
             return fileChooser.getSelectedFile();
-        }else if( result == JFileChooser.CANCEL_OPTION){
+        } else if (result == JFileChooser.CANCEL_OPTION) {
             System.out.println("Process canceled");
             return null;
         }
@@ -468,7 +469,7 @@ public class ActionExecutor {
 
     public void uploadFile(JTextArea textArea) throws IOException {
 
-        if(SpecificProjectPage.currentProjectId == 0) {
+        if (SpecificProjectPage.currentProjectId == 0) {
             JOptionPane.showMessageDialog(null, "Select project.", "Warning", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -507,7 +508,7 @@ public class ActionExecutor {
         selectedFileLabel.setFont(new Font("Arial", Font.BOLD, 12));
         uploadButton.addActionListener(e -> {
             myFile[0] = (File) handleUploadButtonClick();
-            if(myFile[0] != null)
+            if (myFile[0] != null)
                 selectedFileLabel.setText("Selected file:" + myFile[0].getName());
         });
         //myFile[0]
@@ -523,7 +524,7 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(result == JOptionPane.CANCEL_OPTION){
+        if (result == JOptionPane.CANCEL_OPTION) {
             System.out.println("Process is canceled. ");
             return;
         }
@@ -531,28 +532,28 @@ public class ActionExecutor {
         String response;
         String folder = folderField.getText();
 
-        if(myFile[0] == null){
+        if (myFile[0] == null) {
             System.out.println("Please enter the required fields");
             return;
         }
-        if(folder.isEmpty()){
+        if (folder.isEmpty()) {
             response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, myApp.userPassword);
-        }else{
-            response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, myApp.userPassword,folder);
+        } else {
+            response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, myApp.userPassword, folder);
         }
 
+        MessageBroker.stringToCheckboxList();
         MessageBroker.SendMessage(myFile[0].getName());
 
         System.out.println("You are going to upload the file at path: " + myFile[0].getAbsolutePath());
         System.out.println("Project is going to execute.");
 
-        response = "API response message: \n" + response    ;
+        response = "API response message: \n" + response;
         textArea.setText(response);
     }
 
 
-
-    public void getFile(JTextArea textArea){
+    public void getFile(JTextArea textArea) {
         int resultF = JOptionPane.showConfirmDialog(
                 null,
                 "You are about to download a file from data warehouse.",
@@ -561,15 +562,15 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(resultF == JOptionPane.OK_OPTION){
+        if (resultF == JOptionPane.OK_OPTION) {
             System.out.println("process is going to execute.");
-        }else{
+        } else {
             System.out.println("process canceled.");
             return;
         }
 
         String file = JOptionPane.showInputDialog(null, "Enter the full server path: (returned by listTable)", "Get file", JOptionPane.PLAIN_MESSAGE);
-        if(file == null){
+        if (file == null) {
             System.out.println("Input canceled.");
             return;
         }
@@ -577,7 +578,7 @@ public class ActionExecutor {
         byte[] response = myApp.apiConnection.postX("getFile", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), file);
         String filePath = "downloadedFiles" + File.separator + file;
 
-        if(new String(response).contains("error")) {
+        if (new String(response).contains("error")) {
             textArea.setText(jsonBeautifier(new String(response)));
             return;
         }
@@ -602,32 +603,28 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(resultF == JOptionPane.CANCEL_OPTION){
+        if (resultF == JOptionPane.CANCEL_OPTION) {
             System.out.println("process canceled.");
             return;
         }
 
         System.out.println("File is opening.");
 
-        try
-        {
+        try {
             File openFile = new File(filePath);
-            if(!Desktop.isDesktopSupported())
-            {
+            if (!Desktop.isDesktopSupported()) {
                 System.out.println("not supported");
                 return;
             }
             Desktop desktop = Desktop.getDesktop();
-            if(openFile.exists())
+            if (openFile.exists())
                 desktop.open(openFile);
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void deleteFile(JTextArea textArea){
+    public void deleteFile(JTextArea textArea) {
         int resultF = JOptionPane.showConfirmDialog(
                 null,
                 "You are about to delete the file.",
@@ -636,15 +633,15 @@ public class ActionExecutor {
                 JOptionPane.PLAIN_MESSAGE
         );
 
-        if(resultF == JOptionPane.OK_OPTION){
+        if (resultF == JOptionPane.OK_OPTION) {
             System.out.println("process is going to execute.");
-        }else{
+        } else {
             System.out.println("process canceled.");
             return;
         }
 
         String name = JOptionPane.showInputDialog(null, "Enter the full server path: (returned by List Files.)", "Delete file", JOptionPane.PLAIN_MESSAGE);
-        if(name == null){
+        if (name == null) {
             System.out.println("Input canceled.");
             return;
         }
@@ -652,6 +649,7 @@ public class ActionExecutor {
         String response = myApp.apiConnection.post("deleteFile", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), name);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
+        MessageBroker.stringToCheckboxList();
         textArea.setText(response);
     }
 

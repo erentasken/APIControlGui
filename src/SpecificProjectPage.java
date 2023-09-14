@@ -1,5 +1,3 @@
-import com.rabbitmq.client.Channel;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -214,6 +212,7 @@ public class SpecificProjectPage extends JFrame {
         }
 
         myButton.addActionListener(e -> {
+            frame.revalidate();
             for (JCheckBox checkBox : MessageBroker.topicList) {
                 boolean checkBoxSelected = checkBox.isSelected();
                 if (checkBoxSelected) {
@@ -224,25 +223,22 @@ public class SpecificProjectPage extends JFrame {
                             break;
                         }
                     }
-                    if (!labelExists) {
-                        MessageBroker.ListenTopic(checkBox.getText());
+
+                    if (!labelExists || labelList.isEmpty()) {
                         JLabel selectedTopicLabel = new JLabel(checkBox.getText());
                         rightPanel.add(selectedTopicLabel);
                         labelList.add(selectedTopicLabel);
+                        MessageBroker.ListenTopic(checkBox.getText());
                     }
                 } else {
                     Iterator<JLabel> iterator = labelList.iterator();
                     while (iterator.hasNext()) {
                         JLabel label = iterator.next();
                         if (label.getText().equals(checkBox.getText())) {
-                            Iterator channelIter = MessageBroker.channelList.iterator();
-                            while (channelIter.hasNext()) {
-                                Channel channel = (Channel) channelIter.next();
-                                try {
-                                    channel.queueDelete(label.getText() + "Queue");
-                                } catch (Exception ignore) {
-                                }
-
+                            try {
+                                MessageBroker.channel.queueDelete(label.getText() + "Queue");
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
                             }
                             iterator.remove();
                             rightPanel.remove(label);
@@ -272,7 +268,17 @@ public class SpecificProjectPage extends JFrame {
     private void callTheActionListeners() {
         manageSubscription.addActionListener(e ->
         {
+            if (currentProjectId == 0) {
+                JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            System.out.println("clicked on manageSubscriptions");
             try {
+                if (MessageBroker.connection == null) {
+                    MessageBroker.setupConnection();
+                }
+
                 if (!MessageBroker.channel.isOpen()) {
                     System.out.println("call the action setupconnection");
                     MessageBroker.setupConnection();
@@ -283,7 +289,13 @@ public class SpecificProjectPage extends JFrame {
                     JOptionPane.showMessageDialog(null, "Subscription list is empty. ", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (NullPointerException exp) {
-                return;
+                if (MessageBroker.channel == null) {
+                    MessageBroker.setupConnection();
+                }
+                NullPointerException er = new NullPointerException();
+                er.initCause(exp);
+                System.out.println("null pointer exception");
+                throw er;
             }
 
 
