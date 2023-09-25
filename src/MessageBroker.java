@@ -5,8 +5,7 @@ import org.json.JSONObject;
 import javax.swing.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 public class MessageBroker {
@@ -23,25 +22,23 @@ public class MessageBroker {
     public static List<String> queueList;
 
     static {
-        queueList = new ArrayList<String>();
-        topicList = new ArrayList<JCheckBox>();
+        queueList = new ArrayList<>();
+        topicList = new ArrayList<>();
         factory = new ConnectionFactory();
         factory.setHost(HOST);
 
         try {
             connection = factory.newConnection();
         } catch (IOException | TimeoutException e) {
-            handleConnectionError(e);
+            handleConnectionError();
         }
 
         setupConnection();
         stringToCheckboxList();
     }
 
-    private static void handleConnectionError(Exception e) {
-        SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(null, "RabbitMQ Client is not running. ", "Info", JOptionPane.INFORMATION_MESSAGE);
-        });
+    private static void handleConnectionError() {
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, "RabbitMQ Client is not running. ", "Info", JOptionPane.INFORMATION_MESSAGE));
     }
 
     public static void setupConnection() {
@@ -56,26 +53,39 @@ public class MessageBroker {
             }
 
         } catch (IOException ex) {
-            handleConnectionError(ex);
+            handleConnectionError();
         }
     }
 
     public static void stringToCheckboxList() {
-        if (!topicList.isEmpty()) {
-            topicList.clear();
+        List<String> apiTopics = returnFileList();
+        Set<String> topicSet = new HashSet<>();
+        Iterator<JCheckBox> iter = topicList.iterator();
+
+        while (iter.hasNext()) {
+            JCheckBox localTopic = iter.next();
+            topicSet.add(localTopic.getText());
+            if (!apiTopics.contains(localTopic.getText())) {
+                System.out.println("removing the : " + localTopic.getText());
+                iter.remove();
+            }
         }
-        List<String> fileList = returnFileList();
-        for (String str : fileList) {
-            topicList.add(new JCheckBox(str));
+
+        for (String fileName : apiTopics) {
+            if (!topicSet.contains(fileName)) {
+                topicList.add(new JCheckBox(fileName));
+            }
         }
     }
 
     private static List<String> returnFileList() {
         String response = MainPage.action.myApp.apiConnection.post("listFiles", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId));
+        List<String> pathsList = new ArrayList<>();
+
+        if (response.contains("There are no files in this project")) return pathsList;
 
         JSONArray jsonArray = new JSONArray(response);
 
-        List<String> pathsList = new ArrayList<>();
 
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -93,7 +103,7 @@ public class MessageBroker {
         if (!channel.isOpen()) {
             setupConnection();
         }
-
+        System.out.println("filename : " + fileName);
         String message = fileName + " is updated .";
 
         String routingKey = createQueue(fileName);
@@ -141,9 +151,7 @@ public class MessageBroker {
         Thread delayThread = new Thread(() -> {
             try {
                 Thread.sleep(DELAY_MS);
-                SwingUtilities.invokeLater(() -> {
-                    JOptionPane.showMessageDialog(null, messageBuilder.toString(), "Info", JOptionPane.INFORMATION_MESSAGE);
-                });
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, messageBuilder.toString(), "Info", JOptionPane.INFORMATION_MESSAGE));
                 goToElse = true;
 
             } catch (InterruptedException e) {
@@ -154,15 +162,14 @@ public class MessageBroker {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             if (!goToElse) {
-                messageBuilder.append(message).append(queueNameInp).append("\n");
+//                messageBuilder.append(message).append(queueNameInp).append("\n");
+                messageBuilder.append(message).append("\n");
                 if (initialListening) {
                     delayThread.start();
                     initialListening = false;
                 }
             } else {
-                SwingUtilities.invokeLater(() -> {
-                    JOptionPane.showMessageDialog(null, message, "Info", JOptionPane.INFORMATION_MESSAGE);
-                });
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, message, "Info", JOptionPane.INFORMATION_MESSAGE));
             }
         };
 

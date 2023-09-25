@@ -58,7 +58,7 @@ public class SpecificProjectPage extends JFrame {
                     There is a menu item named "Subscription" where you can subscribe to file and list the subscribed files.
                                         
                     "Subscribe To File": Subscribes to desired file in order to get notifications of file update.
-                    "Get Subscribed File List": Lists the subscribed files. 
+                    "Get Subscribed File List": Lists the subscribed files.\s
                                         
                     """;
 
@@ -212,14 +212,17 @@ public class SpecificProjectPage extends JFrame {
         }
 
         myButton.addActionListener(e -> {
+            System.out.println("clicked. Topic list size: " + MessageBroker.topicList.size());
             frame.revalidate();
             for (JCheckBox checkBox : MessageBroker.topicList) {
                 boolean checkBoxSelected = checkBox.isSelected();
+                System.out.println("checkBox is : " + checkBox.getText() + " is selected ? : " + checkBox.isSelected());
                 if (checkBoxSelected) {
                     boolean labelExists = false;
                     for (JLabel label : labelList) {
                         if (Objects.equals(label.getText(), checkBox.getText())) {
                             labelExists = true;
+                            System.out.println("label exist: " + label.getText());
                             break;
                         }
                     }
@@ -266,27 +269,26 @@ public class SpecificProjectPage extends JFrame {
 
 
     private void callTheActionListeners() {
+
         manageSubscription.addActionListener(e ->
         {
             if (currentProjectId == 0) {
                 JOptionPane.showMessageDialog(null, "You need to select a project.", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-
-            System.out.println("clicked on manageSubscriptions");
+            MessageBroker.stringToCheckboxList();
             try {
                 if (MessageBroker.connection == null) {
                     MessageBroker.setupConnection();
                 }
 
                 if (!MessageBroker.channel.isOpen()) {
-                    System.out.println("call the action setupconnection");
                     MessageBroker.setupConnection();
                 }
                 if (!MessageBroker.topicList.isEmpty()) {
                     setCheckBox();
                 } else {
-                    JOptionPane.showMessageDialog(null, "Subscription list is empty. ", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "No files for subscribe. ", "Project Selection", JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (NullPointerException exp) {
                 if (MessageBroker.channel == null) {
@@ -297,8 +299,6 @@ public class SpecificProjectPage extends JFrame {
                 System.out.println("null pointer exception");
                 throw er;
             }
-
-
         });
 
         closeThePageItem.addActionListener(e -> dispose());

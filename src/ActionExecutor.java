@@ -35,7 +35,7 @@ public class ActionExecutor {
     }
 
     public void listUsers(JTextArea textArea) { //listUsers
-        String response = myApp.apiConnection.post("listUsers", MainPage.userName, myApp.userPassword);
+        String response = myApp.apiConnection.post("listUsers", MainPage.userName, MainPage.userPassword);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
         textArea.setText(response);
@@ -93,17 +93,16 @@ public class ActionExecutor {
         String newName = newNameField.getText();
         String newPass = newPasswordField.getText();
 
-        String response = myApp.apiConnection.post("addUser", MainPage.userName, myApp.userPassword, newEmail, newName, newPass);
+        String response = myApp.apiConnection.post("addUser", MainPage.userName, MainPage.userPassword, newEmail, newName, newPass);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
         textArea.setText(response);
     }
 
     public void getUserListInProject(JTextArea textArea) {
-        String response = myApp.apiConnection.post("listUsersInProject", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId));
+        String response = myApp.apiConnection.post("listUsersInProject", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId));
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
-        //myApp.responseArea3.setText(response);
         textArea.setText(response);
     }
 
@@ -114,7 +113,7 @@ public class ActionExecutor {
             return; // Exit the actionPerformed method
         }
 
-        String response = myApp.apiConnection.post("getUserPrivilegesInProject", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), userid);
+        String response = myApp.apiConnection.post("getUserPrivilegesInProject", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), userid);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
         textArea.setText(response);
@@ -206,7 +205,7 @@ public class ActionExecutor {
         modifyPermission = modifyCheckBox.isSelected();
         createPermission = createCheckBox.isSelected();
         deletePermission = deleteCheckBox.isSelected();
-        String response = myApp.apiConnection.post("addUserToProject", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), idUser, modifyPermission, createPermission, deletePermission);
+        String response = myApp.apiConnection.post("addUserToProject", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), idUser, modifyPermission, createPermission, deletePermission);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
         textArea.setText(response);
@@ -299,7 +298,7 @@ public class ActionExecutor {
         createPermission = createCheckBox.isSelected();
         deletePermission = deleteCheckBox.isSelected();
 
-        String response = myApp.apiConnection.post("modifyUserRightsInProject", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), idUser, modifyPermission, createPermission, deletePermission);
+        String response = myApp.apiConnection.post("modifyUserRightsInProject", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), idUser, modifyPermission, createPermission, deletePermission);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
         //myApp.responseArea3.setText(response);
@@ -308,10 +307,9 @@ public class ActionExecutor {
 
     public void listTheProjects(JTextArea textArea) {
 
-        String response = myApp.apiConnection.post("listProjects", MainPage.userName, myApp.userPassword);
+        String response = myApp.apiConnection.post("listProjects", MainPage.userName, MainPage.userPassword);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
-        //myApp.responseArea2.setText(response);
         textArea.setText(response);
     }
 
@@ -337,7 +335,7 @@ public class ActionExecutor {
             return; // Exit the actionPerformed method
         }
 
-        String response = myApp.apiConnection.post("removeUserFromProject", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), userid);
+        String response = myApp.apiConnection.post("removeUserFromProject", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), userid);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
         //myApp.responseArea3.setText(response);
@@ -408,9 +406,9 @@ public class ActionExecutor {
         String response;
         if (projectDescription.isEmpty()) {
             System.out.println("You didn't enter the project description");
-            response = myApp.apiConnection.post("addProject", MainPage.userName, myApp.userPassword, projectName); // projectDescription is additional
+            response = myApp.apiConnection.post("addProject", MainPage.userName, MainPage.userPassword, projectName); // projectDescription is additional
         } else {
-            response = myApp.apiConnection.post("addProject", MainPage.userName, myApp.userPassword, projectName, projectDescription); // projectDescription is additional
+            response = myApp.apiConnection.post("addProject", MainPage.userName, MainPage.userPassword, projectName, projectDescription); // projectDescription is additional
         }
 
         response = jsonBeautifier(response);
@@ -439,10 +437,10 @@ public class ActionExecutor {
             path = pathField.getText();
             if (path.isEmpty()) {
                 System.out.println("Path input not being entered.");
-                response = myApp.apiConnection.post("listFiles", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId));
+                response = myApp.apiConnection.post("listFiles", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId));
             } else {
                 System.out.println("You are about to list files in project: " + SpecificProjectPage.currentProjectId + " at path: " + path);
-                response = myApp.apiConnection.post("listFiles", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), path);
+                response = myApp.apiConnection.post("listFiles", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), path);
             }
             System.out.println("Project is going to execute.");
         } else {
@@ -537,18 +535,17 @@ public class ActionExecutor {
             return;
         }
         if (folder.isEmpty()) {
-            response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, myApp.userPassword);
+            response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, MainPage.userPassword);
+            MessageBroker.stringToCheckboxList();
+            MessageBroker.SendMessage(myFile[0].getName());
         } else {
-            response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, myApp.userPassword, folder);
+            response = myApp.apiConnection.sendFileToServer(myFile[0], String.valueOf(SpecificProjectPage.currentProjectId), MainPage.userName, MainPage.userPassword, folder);
+            MessageBroker.stringToCheckboxList();
+            MessageBroker.SendMessage(folder + "/" + myFile[0].getName());
         }
-
-        MessageBroker.stringToCheckboxList();
-        MessageBroker.SendMessage(myFile[0].getName());
-
-        System.out.println("You are going to upload the file at path: " + myFile[0].getAbsolutePath());
-        System.out.println("Project is going to execute.");
-
+        response = jsonBeautifier(response);
         response = "API response message: \n" + response;
+
         textArea.setText(response);
     }
 
@@ -575,7 +572,7 @@ public class ActionExecutor {
             return;
         }
 
-        byte[] response = myApp.apiConnection.postX("getFile", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), file);
+        byte[] response = myApp.apiConnection.postX("getFile", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), file);
         String filePath = "downloadedFiles" + File.separator + file;
 
         if (new String(response).contains("error")) {
@@ -646,10 +643,10 @@ public class ActionExecutor {
             return;
         }
 
-        String response = myApp.apiConnection.post("deleteFile", MainPage.userName, myApp.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), name);
+        String response = myApp.apiConnection.post("deleteFile", MainPage.userName, MainPage.userPassword, String.valueOf(SpecificProjectPage.currentProjectId), name);
         response = jsonBeautifier(response);
         response = "API response message: \n" + response;
-        MessageBroker.stringToCheckboxList();
+        //MessageBroker.stringToCheckboxList();
         textArea.setText(response);
     }
 
