@@ -18,12 +18,11 @@ public class ViewCreateUserPage extends JFrame {
     JMenuItem closeThePageItem;
 
     String page1Guide =
-            """
-                    Welcome to "User Management" guide!
+            "Welcome to \"User Management\" guide!\n" +
+                    "----------------------------------------------------------------------------------------------------------------\n" +
+                    "\"List Users\"= Monitors the users in the data warehouse.\n" +
+                    "\"Add New User\"= Adds a new user to the data warehouse.\n";
 
-                    ----------------------------------------------------------------------------------------------------------------
-                    "List Users"= Monitors the users in the data warehouse.
-                    "Add New User"= Adds a new user to the data warehouse.""";
 
     public ViewCreateUserPage(ActionExecutor action){
         this.action = action;

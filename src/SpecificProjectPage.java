@@ -34,33 +34,28 @@ public class SpecificProjectPage extends JFrame {
 
     JMenuItem manageSubscription;
     String page3Guide =
-            """
-                    Welcome to "Open Project" guide!
-                    ----------------------------------------------------------------------------------------------------------------
-                    In this page, in order to execute the processes initially, you need to
-                    select a project ID by clicking on the "Select project" button.
-                    ----------------------------------------------------------------------------------------------------------------
-                    There is a menu item named "User Management" where you can execute the following processes:
+            "Welcome to \"Open Project\" guide!\n" +
+                    "----------------------------------------------------------------------------------------------------------------\n" +
+                    "In this page, in order to execute the processes initially, you need to\n" +
+                    "select a project ID by clicking on the \"Select project\" button.\n" +
+                    "----------------------------------------------------------------------------------------------------------------\n" +
+                    "There is a menu item named \"User Management\" where you can execute the following processes:\n\n" +
+                    "\"View User List In Project\": Monitors the existing users in the project.\n" +
+                    "\"View User Privileges In Project\": Monitors the user rights in the project.\n" +
+                    "\"Add New User To Project\": Adds a new user to the project.\n" +
+                    "\"Modify User Rights In Project\": Modifies the privileges of a selected user in the project.\n" +
+                    "\"Remove User From Project\": Removes a selected user from the project.\n" +
+                    "----------------------------------------------------------------------------------------------------------------\n" +
+                    "There is a menu item named \"File Management\" where you can execute the following processes:\n\n" +
+                    "\"Upload A File\": Uploads a file into the selected project. Then notifies the update to file subscribers.\n" +
+                    "\"Delete A File\": Deletes the file from the selected project.\n" +
+                    "\"List Files\": Lists the files in the selected project.\n" +
+                    "\"Download A File\": Downloads a file from the selected project.\n" +
+                    "----------------------------------------------------------------------------------------------------------------\n" +
+                    "There is a menu item named \"Subscription\" where you can subscribe to file and list the subscribed files.\n\n" +
+                    "\"Subscribe To File\": Subscribes to desired file in order to get notifications of file update.\n" +
+                    "\"Get Subscribed File List\": Lists the subscribed files.\n";
 
-                    "View User List In Project": Monitors the existing users in the project.
-                    "View User Privileges In Project": Monitors the user rights in the project.
-                    "Add New User To Project": Adds a new user to the project.
-                    "Modify User Rights In Project": Modifies the privileges of a selected user in the project.
-                    "Remove User From Project": Removes a selected user from the project.
-                    ----------------------------------------------------------------------------------------------------------------
-                    There is a menu item named "File Management" where you can execute the following processes:
-
-                    "Upload A File": Uploads a file into the selected project. Then notifies the update to file subscribers.
-                    "Delete A File": Deletes the file from the selected project.
-                    "List Files": Lists the files in the selected project.
-                    "Download A File": Downloads a file from the selected project.
-                    ----------------------------------------------------------------------------------------------------------------
-                    There is a menu item named "Subscription" where you can subscribe to file and list the subscribed files.
-                                        
-                    "Subscribe To File": Subscribes to desired file in order to get notifications of file update.
-                    "Get Subscribed File List": Lists the subscribed files. 
-                                        
-                    """;
 
     public SpecificProjectPage(ActionExecutor action, ManageProjectPage manageProjectPageObj) {
         this.manageProjectPageObj = manageProjectPageObj;

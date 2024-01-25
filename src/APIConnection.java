@@ -251,31 +251,35 @@ public class APIConnection {
         postParams.put("password", password);
 
         switch (action) {
-            case "getUserPrivilegesInProject", "removeUserFromProject" -> {
+            case "getUserPrivilegesInProject":
+            case "removeUserFromProject":
                 postParams.put("project", param1);
                 postParams.put("userid", param2);
-            }
-            case "addProject" -> {
+                break;
+            case "addProject":
                 postParams.put("projectName", param1);
                 postParams.put("description", param2);
-            }
-            case "getTableRows" -> {
+                break;
+            case "getTableRows":
                 postParams.put("project", param1);
                 postParams.put("table", param2);
-            }
-            case "deleteFile" -> {
+                break;
+            case "deleteFile":
                 postParams.put("project", param1);
                 postParams.put("name", param2);
-            }
-            case "listFiles" -> {
+                break;
+            case "listFiles":
                 postParams.put("project", param1);
                 postParams.put("path", param2);
-            }
-            case "getFile" -> {
+                break;
+            case "getFile":
                 postParams.put("project", param1);
                 postParams.put("file", param2);
-            }
+                break;
+            default:
+                // Handle default case if needed
         }
+
         return sendPostRequest(postParams);
     }
 
@@ -286,22 +290,25 @@ public class APIConnection {
         postParams.put("password", password);
 
         switch (action) {
-            case "addUser" -> {
+            case "addUser":
                 postParams.put("newEmail", param1);
                 postParams.put("newName", param2);
                 postParams.put("newPass", param3);
-            }
-            case "putFile" -> {
+                break;
+            case "putFile":
                 postParams.put("project", param1);
                 postParams.put("path", param2);
                 postParams.put("newFile", param3);
-            }
-            case "putTableRows" -> {
+                break;
+            case "putTableRows":
                 postParams.put("project", param1);
                 postParams.put("table", param2);
                 postParams.put("rows", param3);
-            }
+                break;
+            default:
+                // Handle default case if needed
         }
+
         return sendPostRequest(postParams);
     }
 

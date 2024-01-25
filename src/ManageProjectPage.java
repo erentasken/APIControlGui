@@ -17,15 +17,13 @@ public class ManageProjectPage extends JFrame {
     JMenuItem createProject;
 
     String page1Guide =
-            """
-                    Welcome to the Project Management Guide!
+            "Welcome to the Project Management Guide!\n" +
+                    "----------------------------------------------------------------------------------------------------------------\n" +
+                    "Here are the menu options:\n\n" +
+                    "\"Open Project\": This option allows the user to access and work on a specific existing project.\n" +
+                    "\"Create Project\": Choose this option to create a new project.\n" +
+                    "\"List Projects\": This option enables the user to view a list of projects they are currently involved in.\n";
 
-                    ----------------------------------------------------------------------------------------------------------------
-                    Here are the menu options:
-
-                    "Open Project": This option allows the user to access and work on a specific existing project.
-                    "Create Project": Choose this option to create a new project.
-                    "List Projects": This option enables the user to view a list of projects they are currently involved in.""";
 
     public ManageProjectPage(ActionExecutor action){
         this.action = action;
